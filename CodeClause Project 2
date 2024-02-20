@@ -1,0 +1,25 @@
+import asyncio
+import websockets
+
+# Store all connected clients
+clients = set()
+
+async def handle_client(websocket, path):
+    # Add the client to the set of connected clients
+    clients.add(websocket)
+    try:
+        async for message in websocket:
+            # Broadcast the message to all connected clients
+            for client in clients:
+                await client.send(message)
+    finally:
+        # Remove the client from the set of connected clients
+        clients.remove(websocket)
+
+async def main():
+    # Start the server
+    async with websockets.serve(handle_client, "localhost", 8765):
+        await asyncio.Future()  # Keep the server running
+
+if __name__ == "__main__":
+    asyncio.run(main())
